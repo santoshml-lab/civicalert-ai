@@ -1,6 +1,7 @@
 from typing import Any, Dict
 
 from fastapi import FastAPI
+from database import supabase
 
 app = FastAPI(
     title="CivicAlert AI",
@@ -24,14 +25,28 @@ def health():
         "service": "CivicAlert AI",
     }
 
-
 @app.post("/issues")
 def create_issue(issue: Dict[str, Any]):
+    response = (
+        supabase
+        .table("issues")
+        .insert(issue)
+        .execute()
+    )
+
     return {
         "status": "success",
-        "message": "Issue received successfully",
-        "issue": issue,
+        "message": "Issue saved successfully",
+        "issue": response.data,
     }
+
+
+
+
+    
+        
+        
+    
 
 
 @app.get("/issues")
