@@ -40,18 +40,28 @@ def create_issue(issue: Dict[str, Any]):
         "issue": response.data,
     }
 
-
-
-
-    
-        
-        
-    
-
-
 @app.get("/issues")
 def get_issues():
+    response = (
+        supabase
+        .table("issues")
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+    )
+
     return {
         "status": "success",
-        "issues": [],
+        "issues": response.data,
     }
+
+
+
+
+    
+        
+        
+    
+
+
+
