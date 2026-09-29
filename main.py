@@ -4,11 +4,17 @@ from fastapi import FastAPI
 from database import supabase
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File
+import os
+import base64
+from groq import Groq
 
 app = FastAPI(
     title="CivicAlert AI",
     description="AI-powered community issue reporting platform",
     version="1.0.0",
+)
+groq_client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
 )
 app.add_middleware(
     CORSMiddleware,
