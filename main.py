@@ -81,6 +81,51 @@ async def upload_photo(file: UploadFile = File(...)):
         "message": "Photo received successfully"
     }
 
+@app.post("/analyze-image")
+def analyze_image(image_url: str):
+    response = groq_client.chat.completions.create(
+        model="qwen/qwen3.8-27b",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": """
+Analyze this civic issue image.
+
+Return JSON with:
+- issue
+- category
+- severity
+- explanation
+
+Category must be one of:
+road, garbage, water, electricity, streetlight, drainage, other
+
+Severity must be:
+low, medium, high
+"""
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_url
+                        }
+                    }
+                ]
+            }
+        ],
+        response_format={"type": "json_object"},
+        temperature=0.2,
+        max_completion_tokens=500,
+    )
+
+    return {
+        "status": "success",
+        "analysis": response.choices[0].message.content
+    }
+
 
 
 
