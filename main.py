@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from fastapi import FastAPI
 
 app = FastAPI(
@@ -20,4 +22,21 @@ def health():
     return {
         "status": "healthy",
         "service": "CivicAlert AI",
+    }
+
+
+@app.post("/issues")
+def create_issue(issue: Dict[str, Any]):
+    return {
+        "status": "success",
+        "message": "Issue received successfully",
+        "issue": issue,
+    }
+
+
+@app.get("/issues")
+def get_issues():
+    return {
+        "status": "success",
+        "issues": [],
     }
