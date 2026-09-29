@@ -3,6 +3,7 @@ from typing import Any, Dict
 from fastapi import FastAPI
 from database import supabase
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, UploadFile, File
 
 app = FastAPI(
     title="CivicAlert AI",
@@ -63,6 +64,15 @@ def get_issues():
     return {
         "status": "success",
         "issues": response.data,
+    }
+
+@app.post("/upload-photo")
+async def upload_photo(file: UploadFile = File(...)):
+    return {
+        "status": "success",
+        "filename": file.filename,
+        "content_type": file.content_type,
+        "message": "Photo received successfully"
     }
 
 
