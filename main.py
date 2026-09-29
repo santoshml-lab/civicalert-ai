@@ -2,11 +2,21 @@ from typing import Any, Dict
 
 from fastapi import FastAPI
 from database import supabase
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="CivicAlert AI",
     description="AI-powered community issue reporting platform",
     version="1.0.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://civic-alert-ai-frontend.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
