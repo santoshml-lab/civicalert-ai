@@ -239,6 +239,80 @@ def update_issue_status(issue_id: int, status: str):
         "issue": response.data
     }
 
+# ==========================================
+# GENERATE CIVIC COMPLAINT
+# ==========================================
+
+@app.post("/generate-complaint")
+def generate_complaint(
+    issue: str,
+    category: str,
+    severity: str,
+    location: str,
+    explanation: str,
+):
+    try:
+        prompt = f"""
+You are a professional civic complaint writing assistant.
+
+Create a clear and professional complaint based on the following
+community issue.
+
+Issue: {issue}
+Category: {category}
+Severity: {severity}
+Location: {location}
+AI Explanation: {explanation}
+
+Return ONLY valid JSON in this format:
+
+{{
+    "subject": "short professional complaint subject",
+    "complaint": "professional complaint in 1-2 short paragraphs"
+}}
+
+The complaint should:
+- clearly describe the problem
+- mention the location
+- explain why attention is needed
+- politely request appropriate action
+- avoid inventing facts
+"""
+
+        response = groq_client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            response_format={
+                "type": "json_object"
+            },
+            max_completion_tokens=400,
+        )
+
+        complaint_text = response.choices[0].message.content
+
+        complaint = json.loads(complaint_text)
+
+        return {
+            "status": "success",
+            "complaint": complaint,
+        }
+
+    except Exception as error:
+        print(
+            "Complaint generation error:",
+            error
+        )
+
+        return {
+            "status": "error",
+            "message": "Unable to generate complaint.",
+        }
+
 
 
     
