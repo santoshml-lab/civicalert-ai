@@ -100,6 +100,36 @@ def groq_test():
         "message": response.choices[0].message.content
     }
 
+@app.post("/analyze-image")
+def analyze_image(image_url: str):
+    response = groq_client.chat.completions.create(
+        model="qwen/qwen3.8-27b",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Identify the main civic issue in this image. Reply with the issue, category, severity, and a short explanation."
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": image_url
+                        }
+                    }
+                ]
+            }
+        ],
+        max_completion_tokens=300,
+        reasoning_effort="none",
+    )
+
+    return {
+        "status": "success",
+        "analysis": response.choices[0].message.content
+    }
+
 
 
         
