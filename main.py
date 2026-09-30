@@ -135,7 +135,10 @@ def groq_test():
     }
 
 @app.post("/analyze-image")
-def analyze_image(image_url: str):
+def analyze_image(
+    image_url: str,
+    location: str = "Location not provided"
+):
     response = groq_client.chat.completions.create(
         model="qwen/qwen3.8-27b",
         messages=[
@@ -186,7 +189,7 @@ low, medium, high
         "description": analysis["explanation"],
         "category": analysis["category"],
         "severity": analysis["severity"],
-        "location": "AI detected",
+        "location": location,
         "status": "pending",
         "image_url": image_url,
         "ai_explanation": analysis["explanation"],
@@ -204,6 +207,10 @@ low, medium, high
         "analysis": analysis,
         "issue": db_response.data,
     }
+
+
+
+    
 
 
 
