@@ -8,6 +8,7 @@ import os
 import base64
 from groq import Groq
 import json
+from uuid import uuid4
 
 app = FastAPI(
     title="CivicAlert AI",
@@ -75,12 +76,44 @@ def get_issues():
 
 @app.post("/upload-photo")
 async def upload_photo(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+
+    file_extension = (
+        file.filename.split(".")[-1]
+        if "." in file.filename
+        else "jpg"
+    )
+
+    file_path = f"civic-issues/{uuid4()}.{file_extension}"
+
+    supabase.storage.from_("Warior").upload(
+        file_path,
+        file_bytes,
+        {
+            "content-type": file.content_type or "image/jpeg",
+            "upsert": "false",
+        },
+    )
+
+    public_url = (
+        supabase.storage
+        .from_("Warior")
+        .get_public_url(file_path)
+    )
+
     return {
         "status": "success",
         "filename": file.filename,
         "content_type": file.content_type,
-        "message": "Photo received successfully"
+        "storage_path": file_path,
+        "image_url": public_url,
+        "message": "Photo uploaded to Supabase Storage successfully",
     }
+
+
+
+        
+    
 
 @app.get("/groq-test")
 def groq_test():
