@@ -110,7 +110,24 @@ def analyze_image(image_url: str):
                 "content": [
                     {
                         "type": "text",
-                        "text": "Identify the main civic issue in this image. Reply with the issue, category, severity, and a short explanation."
+                        "text": """
+Analyze this civic issue image.
+
+Return ONLY valid JSON in exactly this format:
+
+{
+  "issue": "short description of the issue",
+  "category": "road",
+  "severity": "high",
+  "explanation": "short explanation"
+}
+
+Allowed categories:
+road, garbage, water, electricity, streetlight, drainage, other
+
+Allowed severity:
+low, medium, high
+"""
                     },
                     {
                         "type": "image_url",
@@ -121,6 +138,7 @@ def analyze_image(image_url: str):
                 ]
             }
         ],
+        response_format={"type": "json_object"},
         max_completion_tokens=300,
         reasoning_effort="none",
     )
@@ -129,6 +147,12 @@ def analyze_image(image_url: str):
         "status": "success",
         "analysis": response.choices[0].message.content
     }
+
+
+
+
+
+    
 
 
 
