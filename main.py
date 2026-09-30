@@ -253,30 +253,28 @@ def generate_complaint(
 ):
     try:
         prompt = f"""
-You are a professional civic complaint writing assistant.
-
-Create a clear and professional complaint based on the following
-community issue.
+Write a short professional civic complaint.
 
 Issue: {issue}
 Category: {category}
 Severity: {severity}
 Location: {location}
-AI Explanation: {explanation}
+Explanation: {explanation}
 
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON in exactly this format:
 
 {{
-    "subject": "short professional complaint subject",
-    "complaint": "professional complaint in 1-2 short paragraphs"
+  "subject": "short complaint subject",
+  "complaint": "one short professional paragraph"
 }}
 
-The complaint should:
-- clearly describe the problem
-- mention the location
-- explain why attention is needed
-- politely request appropriate action
-- avoid inventing facts
+Requirements:
+- Mention the issue.
+- Mention the location.
+- Explain why attention is needed.
+- Politely request appropriate action.
+- Do not invent facts.
+- Keep the complaint concise.
 """
 
         response = groq_client.chat.completions.create(
@@ -290,12 +288,16 @@ The complaint should:
             response_format={
                 "type": "json_object"
             },
-            max_completion_tokens=400,
+            max_completion_tokens=800,
         )
 
-        complaint_text = response.choices[0].message.content
+        complaint_text = (
+            response.choices[0].message.content
+        )
 
-        complaint = json.loads(complaint_text)
+        complaint = json.loads(
+            complaint_text
+        )
 
         return {
             "status": "success",
@@ -311,7 +313,11 @@ The complaint should:
         return {
             "status": "error",
             "message": "Unable to generate complaint.",
+            "details": str(error),
         }
+
+
+
 
 
 
