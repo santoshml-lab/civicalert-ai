@@ -208,6 +208,37 @@ low, medium, high
         "issue": db_response.data,
     }
 
+@app.patch("/issues/{issue_id}/status")
+def update_issue_status(issue_id: int, status: str):
+
+    allowed_statuses = [
+        "pending",
+        "in progress",
+        "resolved"
+    ]
+
+    if status.lower() not in allowed_statuses:
+        return {
+            "status": "error",
+            "message": "Invalid status. Use: pending, in progress, resolved"
+        }
+
+    response = (
+        supabase
+        .table("issues")
+        .update({
+            "status": status.lower()
+        })
+        .eq("id", issue_id)
+        .execute()
+    )
+
+    return {
+        "status": "success",
+        "message": "Issue status updated successfully",
+        "issue": response.data
+    }
+
 
 
     
