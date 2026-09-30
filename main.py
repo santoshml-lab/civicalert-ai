@@ -405,6 +405,100 @@ def calculate_priority_score(
         "reason": " + ".join(reasons),
     }
 
+# ==========================================
+# DUPLICATE / SIMILAR ISSUE DETECTION
+# ==========================================
+
+@app.get("/check-duplicate")
+def check_duplicate(
+    category: str,
+    location: str,
+    title: str = ""
+):
+    try:
+        response = (
+            supabase
+            .table("issues")
+            .select("*")
+            .ilike("category", category)
+            .execute()
+        )
+
+        existing_issues = response.data or []
+
+        location_value = location.lower().strip()
+        title_value = title.lower().strip()
+
+        similar_issues = []
+
+        for issue in existing_issues:
+
+            existing_location = (
+                issue.get("location") or ""
+            ).lower().strip()
+
+            existing_title = (
+                issue.get("title") or ""
+            ).lower().strip()
+
+            location_match = (
+                location_value
+                and existing_location
+                and (
+                    location_value in existing_location
+                    or existing_location in location_value
+                )
+            )
+
+            title_words = set(
+                title_value.split()
+            )
+
+            existing_words = set(
+                existing_title.split()
+            )
+
+            common_words = (
+                title_words & existing_words
+            )
+
+            title_match = (
+                len(common_words) >= 2
+            )
+
+            if location_match or title_match:
+                similar_issues.append(issue)
+
+        if similar_issues:
+            return {
+                "status": "success",
+                "duplicate": True,
+                "count": len(similar_issues),
+                "similar_issues": similar_issues,
+                "message": "A similar civic issue may already exist."
+            }
+
+        return {
+            "status": "success",
+            "duplicate": False,
+            "count": 0,
+            "similar_issues": [],
+            "message": "No similar issue found."
+        }
+
+    except Exception as error:
+
+        print(
+            "Duplicate detection error:",
+            error
+        )
+
+        return {
+            "status": "error",
+            "message": "Unable to check duplicate issues.",
+            "details": str(error)
+        }
+
 
 
 
