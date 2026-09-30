@@ -316,6 +316,95 @@ Requirements:
             "details": str(error),
         }
 
+# ==========================================
+# CIVIC ISSUE PRIORITY SCORE
+# ==========================================
+
+@app.get("/priority-score")
+def calculate_priority_score(
+    severity: str,
+    category: str,
+    location: str = ""
+):
+    severity_scores = {
+        "low": 25,
+        "medium": 55,
+        "high": 85,
+    }
+
+    category_bonus = {
+        "road": 10,
+        "water": 8,
+        "electricity": 8,
+        "streetlight": 5,
+        "drainage": 8,
+        "garbage": 5,
+        "other": 0,
+    }
+
+    severity_value = severity.lower().strip()
+    category_value = category.lower().strip()
+
+    base_score = severity_scores.get(
+        severity_value,
+        25
+    )
+
+    bonus = category_bonus.get(
+        category_value,
+        0
+    )
+
+    score = min(
+        base_score + bonus,
+        100
+    )
+
+    if score >= 80:
+        priority = "high"
+    elif score >= 50:
+        priority = "medium"
+    else:
+        priority = "low"
+
+    reasons = []
+
+    if severity_value == "high":
+        reasons.append(
+            "High severity issue"
+        )
+    elif severity_value == "medium":
+        reasons.append(
+            "Medium severity issue"
+        )
+    else:
+        reasons.append(
+            "Low severity issue"
+        )
+
+    if category_value in [
+        "road",
+        "water",
+        "electricity",
+        "drainage",
+    ]:
+        reasons.append(
+            f"{category_value.capitalize()} issue "
+            "can affect community safety or daily life"
+        )
+
+    if location.strip():
+        reasons.append(
+            f"Reported at {location.strip()}"
+        )
+
+    return {
+        "status": "success",
+        "priority_score": score,
+        "priority": priority,
+        "reason": " + ".join(reasons),
+    }
+
 
 
 
