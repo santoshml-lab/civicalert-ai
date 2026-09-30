@@ -7,6 +7,7 @@ from fastapi import FastAPI, UploadFile, File
 import os
 import base64
 from groq import Groq
+import json
 
 app = FastAPI(
     title="CivicAlert AI",
@@ -113,10 +114,10 @@ def analyze_image(image_url: str):
                         "text": """
 Analyze this civic issue image.
 
-Return ONLY valid JSON in exactly this format:
+Return ONLY valid JSON:
 
 {
-  "issue": "short description of the issue",
+  "issue": "short description",
   "category": "road",
   "severity": "high",
   "explanation": "short explanation"
@@ -143,10 +144,37 @@ low, medium, high
         reasoning_effort="none",
     )
 
+    analysis_text = response.choices[0].message.content
+
+    analysis = json.loads(analysis_text)
+
+    issue_data = {
+        "title": analysis["issue"],
+        "description": analysis["explanation"],
+        "category": analysis["category"],
+        "severity": analysis["severity"],
+        "location": "AI detected",
+        "status": "pending",
+        "image_url": image_url,
+        "ai_explanation": analysis["explanation"],
+    }
+
+    db_response = (
+        supabase
+        .table("issues")
+        .insert(issue_data)
+        .execute()
+    )
+
     return {
         "status": "success",
-        "analysis": response.choices[0].message.content
+        "analysis": analysis,
+        "issue": db_response.data,
     }
+
+
+
+        
 
 
 
